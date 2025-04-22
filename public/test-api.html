@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waste Sorting API Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+        .card-header {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+        .btn-primary {
+            background-color: #4CAF50;
+            border-color: #4CAF50;
+        }
+        .btn-primary:hover {
+            background-color: #3e8e41;
+            border-color: #3e8e41;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .nav-tabs .nav-link.active {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        .nav-tabs .nav-link {
+            color: #4CAF50;
+        }
+        .badge-recyclable {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .badge-non-recyclable {
+            background-color: #f44336;
+            color: white;
+        }
+        .tip-card {
+            border-left: 4px solid #4CAF50;
+            background-color: #f1f8e9;
+        }
+        .guideline-card {
+            border-left: 4px solid #2196F3;
+            background-color: #e3f2fd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="my-4 text-center">Waste Sorting API Test</h1>
+        
+        <ul class="nav nav-tabs mb-4" id="apiTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="auth-tab" data-bs-toggle="tab" data-bs-target="#auth" type="button" role="tab" aria-controls="auth" aria-selected="true">Authentication</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="waste-categories-tab" data-bs-toggle="tab" data-bs-target="#waste-categories" type="button" role="tab" aria-controls="waste-categories" aria-selected="false">Waste Categories</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="recycling-centers-tab" data-bs-toggle="tab" data-bs-target="#recycling-centers" type="button" role="tab" aria-controls="recycling-centers" aria-selected="false">Recycling Centers</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="disposal-guidelines-tab" data-bs-toggle="tab" data-bs-target="#disposal-guidelines" type="button" role="tab" aria-controls="disposal-guidelines" aria-selected="false">Disposal Guidelines</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="recycling-tips-tab" data-bs-toggle="tab" data-bs-target="#recycling-tips" type="button" role="tab" aria-controls="recycling-tips" aria-selected="false">Recycling Tips</button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="apiTabsContent">
+            <!-- Authentication Tab -->
+            <div class="tab-pane fade show active" id="auth" role="tabpanel" aria-labelledby="auth-tab">
+                <div class="card">
+                    <div class="card-header">
+                        Authentication
+                    </div>
+                    <div class="card-body">
+                        <h5>Login</h5>
+                        <form id="loginForm">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" value="testuser">
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" value="password123">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Login</button>
+                        </form>
+                        <div class="mt-3">
+                            <h5>Response:</h5>
+                            <pre id="loginResponse"></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        Register
+                    </div>
+                    <div class="card-body">
+                        <h5>Register New User</h5>
+                        <form id="registerForm">
+                            <div class="mb-3">
+                                <label for="regUsername" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="regUsername">
+                            </div>
+                            <div class="mb-3">
+                                <label for="regEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="regEmail">
+                            </div>
+                            <div class="mb-3">
+                                <label for="regPassword" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="regPassword">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Register</button>
+                        </form>
+                        <div class="mt-3">
+                            <h5>Response:</h5>
+                            <pre id="registerResponse"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Waste Categories Tab -->
+            <div class="tab-pane fade" id="waste-categories" role="tabpanel" aria-labelledby="waste-categories-tab">
+                <div class="card">
+                    <div class="card-header">
+                        Get All Waste Categories
+                    </div>
+                    <div class="card-body">
+                        <button id="getAllWasteCategories" class="btn btn-primary">Get All Waste Categories</button>
+                        <div class="mt-3">
+                            <h5>Response:</h5>
+                            <pre id="wasteResponse"></pre>
+                        </div>
+                        <div id="wasteCards" class="row mt-4"></div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        Get Waste Category by ID
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="wasteCategoryId" class="form-label">Category ID</label>
+                            <input type="text" class="form-control" id="wasteCategoryId">
+                        </div>
+                        <button id="getWasteCategoryById" class="btn btn-primary">Get Category</button>
+                        <div class="mt-3">
+                            <h5>Response:</h5>
+                            <pre id="wasteCategoryResponse"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recycling Centers Tab -->
+            <div class="tab-pane fade" id="recycling-centers" role="tabpanel" aria-labelledby="recycling-centers-tab">
+                <div class="card">
+                    <div class="card-header">
+                        Get All Recycling Centers
+                    </div>
+                    <div class="card-body">
+                        <button id="getAllRecyclingCenters" class="btn btn-primary">Get All Recycling Centers</button>
+                        <div class="mt-3">
+                            <h5>Response:</h5>
+                            <pre id="centersResponse"></pre>
+                        </div>
+                        <div id="centerCards" class="row mt-4"></div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        Get Recycling Center by ID
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="recyclingCenterId" class="form-label">Center ID</label>
+                            <input type="text" class="form-control" id="recyclingCenterId">
+                        </div>
+                        <button id="getRecyclingCenterById" class="btn btn-primary">Get Center</button>
+                        <div class="mt-3">
+                            <h5>Response:</h5>
+                            <pre id="centerResponse"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Disposal Guidelines Tab -->
+            <div class="tab-pane fade" id="disposal-guidelines" role="tabpanel" aria-labelledby="disposal-guidelines-tab">
+                <div class="card">
+                    <div class="card-header">
+                        Get All Disposal Guidelines
+                    </div>
+                    <div class="card-body">
+                        <button id="getAllDisposalGuidelines" class="btn btn-primary">Get All Disposal Guidelines</button>
+                        <div class="mt-3">
+                            <h5>Response:</h5>
+                            <pre id="guidelinesResponse"></pre>
+                        </div>
+                        <div id="guidelineCards" class="row mt-4"></div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        Get Disposal Guideline by ID
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="guidelineId" class="form-label">Guideline ID</label>
+                            <input type="text" class="form-control" id="guidelineId">
+                        </div>
+                        <button id="getGuidelineById" class="btn btn-primary">Get Guideline</button>
+                        <div class="mt-3">
+                            <h5>Response:</h5>
+                            <pre id="guidelineResponse"></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        Common Disposal Guidelines
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="guideline-card p-3">
+                                    <h5>Paper and Cardboard</h5>
+                                    <ol class="mb-0">
+                                        <li>Remove any plastic wrapping or tape</li>
+                                        <li>Flatten boxes to save space</li>
+                                        <li>Keep paper dry and clean</li>
+                                        <li>Place in recycling bin</li>
+                                    </ol>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="guideline-card p-3">
+                                    <h5>Plastic Bottles</h5>
+                                    <ol class="mb-0">
+                                        <li>Empty and rinse containers</li>
+                                        <li>Remove and discard caps (check local guidelines)</li>
+                                        <li>Crush bottles to save space</li>
+                                        <li>Check for recycling symbol and number</li>
+                                    </ol>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="guideline-card p-3">
+                                    <h5>Electronic Waste</h5>
+                                    <ol class="mb-0">
+                                        <li>Back up and erase personal data</li>
+                                        <li>Remove batteries if possible</li>
+                                        <li>Never throw in regular trash</li>
+                                        <li>Take to designated e-waste collection point</li>
+                                    </ol>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="guideline-card p-3">
+                                    <h5>Hazardous Waste</h5>
+                                    <ol class="mb-0">
+                                        <li>Keep in original containers if possible</li>
+                                        <li>Never mix different hazardous materials</li>
+                                        <li>Store safely away from children and pets</li>
+                                        <li>Take to hazardous waste facility</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recycling Tips Tab -->
+            <div class="tab-pane fade" id="recycling-tips" role="tabpanel" aria-labelledby="recycling-tips-tab">
+                <div class="card">
+                    <div class="card-header">
+                        Recycling Tips and Best Practices
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="tip-card p-3">
+                                    <h5>General Recycling Tips</h5>
+                                    <ul class="mb-0">
+                                        <li>Rinse containers before recycling</li>
+                                        <li>Remove labels when possible</li>
+                                        <li>Separate different materials</li>
+                                        <li>Flatten cardboard boxes</li>
+                                        <li>Check local recycling guidelines</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="tip-card p-3">
+                                    <h5>Reduce Waste</h5>
+                                    <ul class="mb-0">
+                                        <li>Use reusable shopping bags</li>
+                                        <li>Buy products with minimal packaging</li>
+                                        <li>Choose products in recyclable containers</li>
+                                        <li>Repair items instead of replacing them</li>
+                                        <li>Donate usable items instead of discarding</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="tip-card p-3">
+                                    <h5>Composting</h5>
+                                    <ul class="mb-0">
+                                        <li>Compost food scraps and yard waste</li>
+                                        <li>Include fruit and vegetable scraps</li>
+                                        <li>Add coffee grounds and eggshells</li>
+                                        <li>Avoid meat, dairy, and oily foods</li>
+                                        <li>Turn compost regularly for aeration</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="tip-card p-3">
+                                    <h5>Plastic Recycling</h5>
+                                    <ul class="mb-0">
+                                        <li>Check the recycling number (1-7)</li>
+                                        <li>Clean containers thoroughly</li>
+                                        <li>Remove caps and lids</li>
+                                        <li>Avoid plastic bags in recycling bins</li>
+                                        <li>Recycle plastic bags at grocery stores</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-4">
+                            <h5>Did You Know?</h5>
+                            <ul>
+                                <li>Recycling one aluminum can saves enough energy to run a TV for three hours.</li>
+                                <li>A glass bottle can take up to 4,000 years to decompose in a landfill.</li>
+                                <li>The average American generates about 4.5 pounds of waste per day.</li>
+                                <li>About 75% of waste is recyclable, but only about 30% is actually recycled.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        Common Recycling Symbols
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3 text-center">
+                                <div class="border rounded p-3">
+                                    <h1>♻️</h1>
+                                    <h5>Universal Recycling Symbol</h5>
+                                    <p>Indicates that the material is recyclable</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3 text-center">
+                                <div class="border rounded p-3">
+                                    <h1>1-7</h1>
+                                    <h5>Plastic Resin Codes</h5>
+                                    <p>Identifies the type of plastic resin used</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3 text-center">
+                                <div class="border rounded p-3">
+                                    <h1>📦</h1>
+                                    <h5>Corrugated Cardboard</h5>
+                                    <p>Indicates recyclable cardboard material</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = 'https://waste-sorting-api.onrender.com/api';
+        let token = localStorage.getItem('token');
+        
+        // Authentication
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/signin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                document.getElementById('loginResponse').textContent = JSON.stringify(data, null, 2);
+                
+                if (data.accessToken) {
+                    token = data.accessToken;
+                    localStorage.setItem('token', token);
+                    alert('Login successful! Token saved.');
+                }
+            } catch (error) {
+                document.getElementById('loginResponse').textContent = error.message;
+            }
+        });
+        
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/signup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, email, password, role: ['user'] })
+                });
+                
+                const data = await response.json();
+                document.getElementById('registerResponse').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('registerResponse').textContent = error.message;
+            }
+        });
+        
+        // Waste Categories
+        document.getElementById('getAllWasteCategories').addEventListener('click', async () => {
+            if (!token) {
+                alert('Please login first!');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/waste-categories`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                document.getElementById('wasteResponse').textContent = JSON.stringify(data, null, 2);
+                
+                // Display waste categories as cards
+                const wasteCardsContainer = document.getElementById('wasteCards');
+                wasteCardsContainer.innerHTML = '';
+                
+                data.forEach(category => {
+                    const card = document.createElement('div');
+                    card.className = 'col-md-4 mb-3';
+                    card.innerHTML = `
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>${category.name}</span>
+                                <span class="badge ${category.recyclable ? 'badge-recyclable' : 'badge-non-recyclable'}">
+                                    ${category.recyclable ? 'Recyclable' : 'Non-recyclable'}
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <p>${category.description}</p>
+                                <h6>Disposal Methods:</h6>
+                                <ul>
+                                    ${category.disposalMethods.map(method => `<li>${method}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div class="card-footer">
+                                <button class="btn btn-sm btn-primary" onclick="document.getElementById('wasteCategoryId').value='${category.id}'; document.getElementById('getWasteCategoryById').click();">View Details</button>
+                            </div>
+                        </div>
+                    `;
+                    wasteCardsContainer.appendChild(card);
+                });
+            } catch (error) {
+                document.getElementById('wasteResponse').textContent = error.message;
+            }
+        });
+        
+        document.getElementById('getWasteCategoryById').addEventListener('click', async () => {
+            if (!token) {
+                alert('Please login first!');
+                return;
+            }
+            
+            const id = document.getElementById('wasteCategoryId').value;
+            if (!id) {
+                alert('Please enter a category ID');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/waste-categories/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                document.getElementById('wasteCategoryResponse').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('wasteCategoryResponse').textContent = error.message;
+            }
+        });
+        
+        // Recycling Centers
+        document.getElementById('getAllRecyclingCenters').addEventListener('click', async () => {
+            if (!token) {
+                alert('Please login first!');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/recycling-centers`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                document.getElementById('centersResponse').textContent = JSON.stringify(data, null, 2);
+                
+                // Display recycling centers as cards
+                const centerCardsContainer = document.getElementById('centerCards');
+                centerCardsContainer.innerHTML = '';
+                
+                data.forEach(center => {
+                    const card = document.createElement('div');
+                    card.className = 'col-md-6 mb-3';
+                    card.innerHTML = `
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>${center.name}</span>
+                                <span class="badge ${center.active ? 'badge-recyclable' : 'badge-non-recyclable'}">
+                                    ${center.active ? 'Active' : 'Inactive'}
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Address:</strong> ${center.address}</p>
+                                ${center.contactNumber ? `<p><strong>Contact:</strong> ${center.contactNumber}</p>` : ''}
+                                ${center.email ? `<p><strong>Email:</strong> ${center.email}</p>` : ''}
+                                ${center.operatingHours ? `<p><strong>Hours:</strong> ${center.operatingHours}</p>` : ''}
+                                
+                                <h6>Accepted Waste Categories:</h6>
+                                ${center.acceptedWasteCategories && center.acceptedWasteCategories.length > 0 ? 
+                                    `<ul>${center.acceptedWasteCategories.map(category => `<li>${category}</li>`).join('')}</ul>` : 
+                                    '<p>No specific categories listed</p>'}
+                            </div>
+                            <div class="card-footer d-flex justify-content-between">
+                                <button class="btn btn-sm btn-primary" onclick="document.getElementById('recyclingCenterId').value='${center.id}'; document.getElementById('getRecyclingCenterById').click();">View Details</button>
+                                ${center.website ? `<a href="${center.website}" target="_blank" class="btn btn-sm btn-outline-primary">Visit Website</a>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    centerCardsContainer.appendChild(card);
+                });
+            } catch (error) {
+                document.getElementById('centersResponse').textContent = error.message;
+            }
+        });
+        
+        document.getElementById('getRecyclingCenterById').addEventListener('click', async () => {
+            if (!token) {
+                alert('Please login first!');
+                return;
+            }
+            
+            const id = document.getElementById('recyclingCenterId').value;
+            if (!id) {
+                alert('Please enter a center ID');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/recycling-centers/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                document.getElementById('centerResponse').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('centerResponse').textContent = error.message;
+            }
+        });
+        
+        // Disposal Guidelines
+        document.getElementById('getAllDisposalGuidelines').addEventListener('click', async () => {
+            if (!token) {
+                alert('Please login first!');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/disposal-guidelines`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                document.getElementById('guidelinesResponse').textContent = JSON.stringify(data, null, 2);
+                
+                // Display guidelines as cards
+                const guidelineCardsContainer = document.getElementById('guidelineCards');
+                guidelineCardsContainer.innerHTML = '';
+                
+                data.forEach(guideline => {
+                    const card = document.createElement('div');
+                    card.className = 'col-md-6 mb-3';
+                    card.innerHTML = `
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>${guideline.title}</span>
+                                <span class="badge badge-primary">${guideline.wasteCategory}</span>
+                            </div>
+                            ${guideline.imageUrl ? `<img src="${guideline.imageUrl}" class="card-img-top" alt="${guideline.title}" style="height: 200px; object-fit: cover;">` : ''}
+                            <div class="card-body">
+                                <p>${guideline.description}</p>
+                                
+                                <h6>Steps:</h6>
+                                <ol>
+                                    ${guideline.steps.map(step => `<li>${step}</li>`).join('')}
+                                </ol>
+                                
+                                <h6>Tips:</h6>
+                                <ul>
+                                    ${guideline.tips.map(tip => `<li>${tip}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div class="card-footer">
+                                <button class="btn btn-sm btn-primary" onclick="document.getElementById('guidelineId').value='${guideline.id}'; document.getElementById('getGuidelineById').click();">View Details</button>
+                            </div>
+                        </div>
+                    `;
+                    guidelineCardsContainer.appendChild(card);
+                });
+            } catch (error) {
+                document.getElementById('guidelinesResponse').textContent = error.message;
+            }
+        });
+        
+        document.getElementById('getGuidelineById').addEventListener('click', async () => {
+            if (!token) {
+                alert('Please login first!');
+                return;
+            }
+            
+            const id = document.getElementById('guidelineId').value;
+            if (!id) {
+                alert('Please enter a guideline ID');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/disposal-guidelines/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                document.getElementById('guidelineResponse').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('guidelineResponse').textContent = error.message;
+            }
+        });
+    </script>
+</body>
+</html>
