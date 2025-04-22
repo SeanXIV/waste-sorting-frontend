@@ -25,9 +25,8 @@ export default function Dashboard() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [wasteCategories, setWasteCategories] = useState<WasteCategory[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const { setLoading, setLoadingMessage } = useLoading();
+  const { isLoading, setLoading, setLoadingMessage } = useLoading();
 
   useEffect(() => {
     // Check if user is logged in
@@ -53,7 +52,6 @@ export default function Dashboard() {
         console.error('Error fetching waste categories:', err);
         setError('Failed to load waste categories. Please try again later.');
       } finally {
-        setIsLoading(false);
         setLoading(false);
       }
     };
@@ -67,14 +65,7 @@ export default function Dashboard() {
     router.push('/');
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px]">
-        <div className="spinner spinner-lg text-primary-500 mb-4"></div>
-        <p className="text-gray-600">Loading dashboard...</p>
-      </div>
-    );
-  }
+  // We don't need a local loading state anymore as we're using the global loading context
 
   return (
     <div>

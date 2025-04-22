@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { wasteCategoriesAPI } from '../../lib/api';
+import { useLoading } from '../../context/LoadingContext';
 
 type WasteCategory = {
   id: string;
@@ -16,8 +17,8 @@ type WasteCategory = {
 export default function WasteCategories() {
   const router = useRouter();
   const [wasteCategories, setWasteCategories] = useState<WasteCategory[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const { isLoading, setLoading, setLoadingMessage } = useLoading();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRecyclable, setFilterRecyclable] = useState<boolean | null>(null);
 
@@ -32,6 +33,8 @@ export default function WasteCategories() {
 
     // Fetch waste categories
     const fetchWasteCategories = async () => {
+      setLoading(true);
+      setLoadingMessage('Loading waste categories...');
       try {
         const data = await wasteCategoriesAPI.getAll();
         setWasteCategories(data);
@@ -39,12 +42,12 @@ export default function WasteCategories() {
         console.error('Error fetching waste categories:', err);
         setError('Failed to load waste categories. Please try again later.');
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
     fetchWasteCategories();
-  }, [router]);
+  }, [router, setLoading, setLoadingMessage]);
 
   // Filter waste categories based on search term and recyclable filter
   const filteredCategories = wasteCategories.filter(category => {
@@ -56,16 +59,7 @@ export default function WasteCategories() {
     return matchesSearch && matchesRecyclable;
   });
 
-  if (isLoading) {
-    return (
-      <div className="text-center my-5">
-        <div className="spinner-border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p className="mt-3">Loading waste categories...</p>
-      </div>
-    );
-  }
+  // We don't need a local loading indicator as we're using the global loading context
 
   return (
     <div className="my-5">

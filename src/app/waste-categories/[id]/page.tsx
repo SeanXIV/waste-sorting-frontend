@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { wasteCategoriesAPI } from '../../../lib/api';
+import { useLoading } from '../../../context/LoadingContext';
 
 type WasteCategory = {
   id: string;
@@ -16,8 +17,8 @@ type WasteCategory = {
 export default function WasteCategoryDetail({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [category, setCategory] = useState<WasteCategory | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const { isLoading, setLoading, setLoadingMessage } = useLoading();
 
   useEffect(() => {
     // Check if user is logged in
@@ -30,6 +31,8 @@ export default function WasteCategoryDetail({ params }: { params: { id: string }
 
     // Fetch waste category details
     const fetchWasteCategory = async () => {
+      setLoading(true);
+      setLoadingMessage('Loading waste category details...');
       try {
         const data = await wasteCategoriesAPI.getById(params.id);
         setCategory(data);
@@ -37,23 +40,14 @@ export default function WasteCategoryDetail({ params }: { params: { id: string }
         console.error('Error fetching waste category:', err);
         setError('Failed to load waste category details. Please try again later.');
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
     fetchWasteCategory();
-  }, [params.id, router]);
+  }, [params.id, router, setLoading, setLoadingMessage]);
 
-  if (isLoading) {
-    return (
-      <div className="text-center my-5">
-        <div className="spinner-border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p className="mt-3">Loading waste category details...</p>
-      </div>
-    );
-  }
+  // We don't need a local loading indicator as we're using the global loading context
 
   if (error) {
     return (
