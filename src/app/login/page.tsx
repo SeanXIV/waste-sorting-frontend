@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { authAPI } from '../../lib/api';
+import { useLoading } from '../../context/LoadingContext';
 
 type FormData = {
   username: string;
@@ -14,7 +15,8 @@ type FormData = {
 export default function Login() {
   const router = useRouter();
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { setLoading, setLoadingMessage } = useLoading();
 
   const {
     register,
@@ -23,8 +25,10 @@ export default function Login() {
   } = useForm<FormData>();
 
   const onSubmit = async (data: FormData) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     setError('');
+    setLoading(true);
+    setLoadingMessage('Logging in...');
 
     try {
       // Use the authAPI for login
@@ -48,67 +52,85 @@ export default function Login() {
         'Failed to login. Please check your credentials.'
       );
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="row justify-content-center mt-5">
-      <div className="col-md-6">
-        <div className="card">
-          <div className="card-body">
-            <h2 className="card-title text-center mb-4">Login</h2>
+    <div className="max-w-md mx-auto">
+      <div className="card">
+        <div className="card-body">
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold text-dark-900">Welcome Back</h1>
+            <p className="text-gray-600 mt-2">Sign in to your account to continue</p>
+          </div>
 
-            {error && (
-              <div className="alert alert-danger" role="alert">
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="mb-3">
-                <label htmlFor="username" className="form-label">Username</label>
-                <input
-                  type="text"
-                  className={`form-control ${errors.username ? 'is-invalid' : ''}`}
-                  id="username"
-                  {...register('username', { required: 'Username is required' })}
-                />
-                {errors.username && (
-                  <div className="invalid-feedback">{errors.username.message}</div>
-                )}
-              </div>
-
-              <div className="mb-3">
-                <label htmlFor="password" className="form-label">Password</label>
-                <input
-                  type="password"
-                  className={`form-control ${errors.password ? 'is-invalid' : ''}`}
-                  id="password"
-                  {...register('password', { required: 'Password is required' })}
-                />
-                {errors.password && (
-                  <div className="invalid-feedback">{errors.password.message}</div>
-                )}
-              </div>
-
-              <div className="d-grid gap-2">
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Logging in...' : 'Login'}
-                </button>
-              </div>
-            </form>
-
-            <div className="mt-3 text-center">
-              <p>
-                Don't have an account?{' '}
-                <Link href="/register">Register here</Link>
-              </p>
+          {error && (
+            <div className="alert alert-danger mb-6" role="alert">
+              {error}
             </div>
+          )}
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div>
+              <label htmlFor="username" className="form-label">Username</label>
+              <input
+                type="text"
+                className={`form-control ${errors.username ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+                id="username"
+                placeholder="Enter your username"
+                {...register('username', { required: 'Username is required' })}
+              />
+              {errors.username && (
+                <div className="form-error">{errors.username.message}</div>
+              )}
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center">
+                <label htmlFor="password" className="form-label">Password</label>
+                <Link href="#" className="text-sm text-primary-600 hover:text-primary-700">
+                  Forgot password?
+                </Link>
+              </div>
+              <input
+                type="password"
+                className={`form-control ${errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+                id="password"
+                placeholder="Enter your password"
+                {...register('password', { required: 'Password is required' })}
+              />
+              {errors.password && (
+                <div className="form-error">{errors.password.message}</div>
+              )}
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                className="btn btn-primary w-full py-2.5 flex justify-center items-center"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <span className="spinner spinner-sm mr-2"></span>
+                    <span>Logging in...</span>
+                  </>
+                ) : (
+                  'Sign In'
+                )}
+              </button>
+            </div>
+          </form>
+
+          <div className="mt-8 text-center">
+            <p className="text-gray-600">
+              Don't have an account?{' '}
+              <Link href="/register" className="text-primary-600 hover:text-primary-700 font-medium">
+                Create an account
+              </Link>
+            </p>
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { authAPI } from '../../lib/api';
+import { useLoading } from '../../context/LoadingContext';
 
 type FormData = {
   username: string;
@@ -17,7 +18,8 @@ export default function Register() {
   const router = useRouter();
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { setLoading, setLoadingMessage } = useLoading();
 
   const {
     register,
@@ -29,15 +31,17 @@ export default function Register() {
   const password = watch('password');
 
   const onSubmit = async (data: FormData) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     setError('');
     setSuccess('');
+    setLoading(true);
+    setLoadingMessage('Creating your account...');
 
     try {
       // Use the authAPI for registration
       await authAPI.register(data.username, data.email, data.password);
 
-      setSuccess('Registration successful! You can now login.');
+      setSuccess('Registration successful! Redirecting to login...');
 
       // Redirect to login page after 2 seconds
       setTimeout(() => {
@@ -50,121 +54,137 @@ export default function Register() {
         'Failed to register. Please try again.'
       );
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="row justify-content-center mt-5">
-      <div className="col-md-6">
-        <div className="card">
-          <div className="card-body">
-            <h2 className="card-title text-center mb-4">Register</h2>
+    <div className="max-w-md mx-auto">
+      <div className="card">
+        <div className="card-body">
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold text-dark-900">Create an Account</h1>
+            <p className="text-gray-600 mt-2">Join our community of eco-conscious individuals</p>
+          </div>
 
-            {error && (
-              <div className="alert alert-danger" role="alert">
-                {error}
-              </div>
-            )}
-
-            {success && (
-              <div className="alert alert-success" role="alert">
-                {success}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="mb-3">
-                <label htmlFor="username" className="form-label">Username</label>
-                <input
-                  type="text"
-                  className={`form-control ${errors.username ? 'is-invalid' : ''}`}
-                  id="username"
-                  {...register('username', {
-                    required: 'Username is required',
-                    minLength: {
-                      value: 3,
-                      message: 'Username must be at least 3 characters'
-                    }
-                  })}
-                />
-                {errors.username && (
-                  <div className="invalid-feedback">{errors.username.message}</div>
-                )}
-              </div>
-
-              <div className="mb-3">
-                <label htmlFor="email" className="form-label">Email</label>
-                <input
-                  type="email"
-                  className={`form-control ${errors.email ? 'is-invalid' : ''}`}
-                  id="email"
-                  {...register('email', {
-                    required: 'Email is required',
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Invalid email address'
-                    }
-                  })}
-                />
-                {errors.email && (
-                  <div className="invalid-feedback">{errors.email.message}</div>
-                )}
-              </div>
-
-              <div className="mb-3">
-                <label htmlFor="password" className="form-label">Password</label>
-                <input
-                  type="password"
-                  className={`form-control ${errors.password ? 'is-invalid' : ''}`}
-                  id="password"
-                  {...register('password', {
-                    required: 'Password is required',
-                    minLength: {
-                      value: 6,
-                      message: 'Password must be at least 6 characters'
-                    }
-                  })}
-                />
-                {errors.password && (
-                  <div className="invalid-feedback">{errors.password.message}</div>
-                )}
-              </div>
-
-              <div className="mb-3">
-                <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
-                <input
-                  type="password"
-                  className={`form-control ${errors.confirmPassword ? 'is-invalid' : ''}`}
-                  id="confirmPassword"
-                  {...register('confirmPassword', {
-                    required: 'Please confirm your password',
-                    validate: value =>
-                      value === password || 'The passwords do not match'
-                  })}
-                />
-                {errors.confirmPassword && (
-                  <div className="invalid-feedback">{errors.confirmPassword.message}</div>
-                )}
-              </div>
-
-              <div className="d-grid gap-2">
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Registering...' : 'Register'}
-                </button>
-              </div>
-            </form>
-
-            <div className="mt-3 text-center">
-              <p>
-                Already have an account?{' '}
-                <Link href="/login">Login here</Link>
-              </p>
+          {error && (
+            <div className="alert alert-danger mb-6" role="alert">
+              {error}
             </div>
+          )}
+
+          {success && (
+            <div className="alert alert-success mb-6" role="alert">
+              {success}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <div>
+              <label htmlFor="username" className="form-label">Username</label>
+              <input
+                type="text"
+                className={`form-control ${errors.username ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+                id="username"
+                placeholder="Choose a username"
+                {...register('username', {
+                  required: 'Username is required',
+                  minLength: {
+                    value: 3,
+                    message: 'Username must be at least 3 characters'
+                  }
+                })}
+              />
+              {errors.username && (
+                <div className="form-error">{errors.username.message}</div>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="email" className="form-label">Email</label>
+              <input
+                type="email"
+                className={`form-control ${errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+                id="email"
+                placeholder="Enter your email address"
+                {...register('email', {
+                  required: 'Email is required',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'Invalid email address'
+                  }
+                })}
+              />
+              {errors.email && (
+                <div className="form-error">{errors.email.message}</div>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="password" className="form-label">Password</label>
+              <input
+                type="password"
+                className={`form-control ${errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+                id="password"
+                placeholder="Create a password"
+                {...register('password', {
+                  required: 'Password is required',
+                  minLength: {
+                    value: 6,
+                    message: 'Password must be at least 6 characters'
+                  }
+                })}
+              />
+              {errors.password && (
+                <div className="form-error">{errors.password.message}</div>
+              )}
+              <div className="text-xs text-gray-500 mt-1">Password must be at least 6 characters long</div>
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
+              <input
+                type="password"
+                className={`form-control ${errors.confirmPassword ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+                id="confirmPassword"
+                placeholder="Confirm your password"
+                {...register('confirmPassword', {
+                  required: 'Please confirm your password',
+                  validate: value =>
+                    value === password || 'The passwords do not match'
+                })}
+              />
+              {errors.confirmPassword && (
+                <div className="form-error">{errors.confirmPassword.message}</div>
+              )}
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="submit"
+                className="btn btn-primary w-full py-2.5 flex justify-center items-center"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <span className="spinner spinner-sm mr-2"></span>
+                    <span>Creating account...</span>
+                  </>
+                ) : (
+                  'Create Account'
+                )}
+              </button>
+            </div>
+          </form>
+
+          <div className="mt-8 text-center">
+            <p className="text-gray-600">
+              Already have an account?{' '}
+              <Link href="/login" className="text-primary-600 hover:text-primary-700 font-medium">
+                Sign in
+              </Link>
+            </p>
           </div>
         </div>
       </div>
