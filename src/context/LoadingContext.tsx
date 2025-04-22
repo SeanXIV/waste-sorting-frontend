@@ -13,14 +13,14 @@ const LoadingContext = createContext<LoadingContextType | undefined>(undefined);
 
 export function LoadingProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('Loading...');
+  const [loadingMessage, setLoadingMessageState] = useState('Loading...');
 
   const setLoading = (loading: boolean) => {
     setIsLoading(loading);
   };
 
   const setLoadingMessage = (message: string) => {
-    setLoadingMessage(message);
+    setLoadingMessageState(message);
   };
 
   return (
