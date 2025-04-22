@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
-import { authAPI } from '@/lib/api';
+import { authAPI } from '../../lib/api';
 
 type FormData = {
   username: string;

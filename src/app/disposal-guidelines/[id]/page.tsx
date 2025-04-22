@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { disposalGuidelinesAPI } from '@/lib/api';
+import { disposalGuidelinesAPI } from '../../../lib/api';
 
 type DisposalGuideline = {
   id: string;

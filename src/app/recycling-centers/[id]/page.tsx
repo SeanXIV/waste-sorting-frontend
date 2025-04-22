@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { recyclingCentersAPI } from '@/lib/api';
+import { recyclingCentersAPI } from '../../../lib/api';
 
 type RecyclingCenter = {
   id: string;

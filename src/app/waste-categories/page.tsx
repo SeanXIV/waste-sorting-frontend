@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { wasteCategoriesAPI } from '@/lib/api';
+import { wasteCategoriesAPI } from '../../lib/api';
 
 type WasteCategory = {
   id: string;

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { reportsAPI } from '@/lib/api';
+import { reportsAPI } from '../../lib/api';
 
 type ReportData = {
   categoryName?: string;
