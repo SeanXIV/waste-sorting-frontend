@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { disposalGuidelinesAPI } from '../../lib/api';
 import { useLoading } from '../../context/LoadingContext';
+import { motion } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
 
 type DisposalGuideline = {
   id: string;
@@ -24,27 +26,30 @@ export default function DisposalGuidelines() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
+  const { ref, inView } = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
 
   useEffect(() => {
-    // Check if user is logged in
     const token = localStorage.getItem('token');
-
     if (!token) {
       router.push('/login');
       return;
     }
 
-    // Fetch disposal guidelines
     const fetchGuidelines = async () => {
       setLoading(true);
       setLoadingMessage('Loading disposal guidelines...');
       try {
         const data = await disposalGuidelinesAPI.getAll();
-        setGuidelines(data);
-
-        // Extract unique categories
-        const uniqueCategories = [...new Set(data.map((guideline: DisposalGuideline) => guideline.wasteCategory))];
-        setCategories(uniqueCategories);
+        if (Array.isArray(data)) {
+          setGuidelines(data);
+          const uniqueCategories = [...new Set(data.map(guideline => guideline.wasteCategory))];
+          setCategories(uniqueCategories);
+        } else {
+          throw new Error('Invalid data format received');
+        }
       } catch (err) {
         console.error('Error fetching disposal guidelines:', err);
         setError('Failed to load disposal guidelines. Please try again later.');
@@ -56,21 +61,46 @@ export default function DisposalGuidelines() {
     fetchGuidelines();
   }, [router, setLoading, setLoadingMessage]);
 
-  // Filter guidelines based on search term and selected category
   const filteredGuidelines = guidelines.filter(guideline => {
-    const matchesSearch = guideline.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         guideline.description.toLowerCase().includes(searchTerm.toLowerCase());
+    if (!guideline?.title || !guideline?.description) return false;
+    
+    const matchesSearch = (guideline.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         guideline.description.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const matchesCategory = selectedCategory === '' || guideline.wasteCategory === selectedCategory;
+    const matchesCategory = !selectedCategory || guideline.wasteCategory === selectedCategory;
 
     return matchesSearch && matchesCategory;
   });
 
-  // We don't need a local loading indicator as we're using the global loading context
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.5
+      }
+    }
+  };
 
   return (
     <div>
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8"
+      >
         <div>
           <h1 className="text-3xl font-bold text-dark-900">Disposal Guidelines</h1>
           <p className="text-gray-600 mt-2">Learn the proper methods for disposing different types of waste</p>
@@ -81,15 +111,24 @@ export default function DisposalGuidelines() {
           </svg>
           Back to Dashboard
         </Link>
-      </div>
+      </motion.div>
 
       {error && (
-        <div className="alert alert-danger mb-6" role="alert">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="alert alert-danger mb-6"
+          role="alert"
+        >
           {error}
-        </div>
+        </motion.div>
       )}
 
-      <div className="card mb-8 shadow-sm">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="card mb-8 shadow-sm"
+      >
         <div className="card-body">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="md:col-span-3">
@@ -123,7 +162,11 @@ export default function DisposalGuidelines() {
           </div>
 
           {searchTerm && (
-            <div className="mt-4 flex items-center">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mt-4 flex items-center"
+            >
               <span className="text-sm text-gray-600 mr-2">Search results for:</span>
               <div className="bg-gray-100 rounded-full px-3 py-1 text-sm flex items-center">
                 {searchTerm}
@@ -136,127 +179,100 @@ export default function DisposalGuidelines() {
                   </svg>
                 </button>
               </div>
-            </div>
-          )}
-
-          {selectedCategory && (
-            <div className="mt-2 flex items-center">
-              <span className="text-sm text-gray-600 mr-2">Category:</span>
-              <div className="bg-primary-100 text-primary-800 rounded-full px-3 py-1 text-sm flex items-center">
-                {selectedCategory}
-                <button
-                  onClick={() => setSelectedCategory('')}
-                  className="ml-2 text-primary-600 hover:text-primary-800 focus:outline-none"
-                >
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
+            </motion.div>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {filteredGuidelines.length === 0 ? (
-        <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-4 mb-6">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-4 mb-6"
+        >
           <div className="flex">
             <svg className="h-5 w-5 text-blue-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <p>No disposal guidelines found matching your criteria.</p>
           </div>
-        </div>
+        </motion.div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {filteredGuidelines.map((guideline) => (
-            <div className="card h-full hover:shadow-card-hover transition-shadow duration-300" key={guideline.id}>
-              <div className="card-header flex items-center bg-purple-50">
-                <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-                <span className="font-medium text-purple-800">{guideline.title}</span>
-                <span className="ml-auto badge badge-primary">{guideline.wasteCategory}</span>
-              </div>
-
-              {guideline.imageUrl && (
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={guideline.imageUrl}
-                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                    alt={guideline.title}
-                  />
-                </div>
-              )}
-
+        <motion.div
+          ref={ref}
+          variants={containerVariants}
+          initial="hidden"
+          animate={inView ? "visible" : "hidden"}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          {filteredGuidelines.map((guideline, index) => (
+            <motion.div
+              key={guideline.id}
+              variants={itemVariants}
+              className="card h-full hover:shadow-card-hover transition-all duration-300"
+              whileHover={{ scale: 1.02 }}
+            >
               <div className="card-body">
-                <p className="text-gray-700 mb-5">{guideline.description}</p>
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="text-xl font-semibold text-dark-900">{guideline.title}</h3>
+                  <span className="badge badge-primary">{guideline.wasteCategory}</span>
+                </div>
+                <p className="text-gray-600 mb-4">{guideline.description}</p>
 
-                <div className="mb-5">
-                  <h3 className="text-lg font-semibold text-dark-900 mb-3 flex items-center">
-                    <svg className="w-5 h-5 mr-2 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                    Steps to Follow
-                  </h3>
-                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                    <ol className="space-y-3">
-                      {guideline.steps.map((step, index) => (
-                        <li className="flex items-start" key={index}>
-                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary-100 text-primary-600 mr-3 flex-shrink-0 mt-0.5">
-                            {index + 1}
-                          </span>
-                          <span className="text-gray-700">{step}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Steps to Follow:</h4>
+                  <ul className="space-y-2">
+                    {guideline.steps.map((step, stepIndex) => (
+                      <motion.li
+                        key={stepIndex}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: stepIndex * 0.1 }}
+                        className="flex items-start"
+                      >
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary-100 text-primary-600 mr-3 flex-shrink-0">
+                          {stepIndex + 1}
+                        </span>
+                        <span className="text-gray-700">{step}</span>
+                      </motion.li>
+                    ))}
+                  </ul>
                 </div>
 
-                <div>
-                  <h3 className="text-lg font-semibold text-dark-900 mb-3 flex items-center">
-                    <svg className="w-5 h-5 mr-2 text-accent-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
-                    Helpful Tips
-                  </h3>
-                  <div className="bg-accent-50 rounded-lg p-4 border border-accent-100">
+                {guideline.tips.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Helpful Tips:</h4>
                     <ul className="space-y-2">
-                      {guideline.tips.map((tip, index) => (
-                        <li className="flex items-start" key={index}>
-                          <span className="text-accent-500 mr-2">•</span>
+                      {guideline.tips.map((tip, tipIndex) => (
+                        <motion.li
+                          key={tipIndex}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: tipIndex * 0.1 }}
+                          className="flex items-start"
+                        >
+                          <span className="text-primary-500 mr-2">•</span>
                           <span className="text-gray-700">{tip}</span>
-                        </li>
+                        </motion.li>
                       ))}
                     </ul>
                   </div>
-                </div>
+                )}
               </div>
-
-              <div className="card-footer bg-gray-50 flex justify-between items-center">
+              <div className="card-footer bg-gray-50">
                 <Link
                   href={`/disposal-guidelines/${guideline.id}`}
-                  className="btn btn-primary flex items-center"
+                  className="btn btn-primary w-full flex items-center justify-center"
                 >
                   <span>View Full Guide</span>
-                  <svg className="ml-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                   </svg>
                 </Link>
-
-                <Link
-                  href={`/waste-categories?category=${encodeURIComponent(guideline.wasteCategory)}`}
-                  className="btn btn-outline flex items-center"
-                >
-                  <svg className="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                  </svg>
-                  Related Waste
-                </Link>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );
