@@ -12,7 +12,7 @@ module.exports = {
           100: '#c3e6cb',
           200: '#9fd6ab',
           300: '#7bc68a',
-          400: '#5cb85c', // Main primary color
+          400: '#5cb85c',
           500: '#4caf50',
           600: '#45a049',
           700: '#3d8b40',
@@ -37,7 +37,7 @@ module.exports = {
           200: '#ffe082',
           300: '#ffd54f',
           400: '#ffca28',
-          500: '#ffc107', // Main accent color
+          500: '#ffc107',
           600: '#ffb300',
           700: '#ffa000',
           800: '#ff8f00',
@@ -53,7 +53,7 @@ module.exports = {
           600: '#323c5b',
           700: '#2b3451',
           800: '#242c47',
-          900: '#1a2035', // Main dark color
+          900: '#1a2035',
         },
       },
       fontFamily: {
@@ -66,6 +66,21 @@ module.exports = {
       borderRadius: {
         'xl': '1rem',
         '2xl': '1.5rem',
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.5s ease-in',
+        'slide-up': 'slideUp 0.5s ease-out',
+        'bounce-slow': 'bounce 3s infinite',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(20px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
       },
     },
   },

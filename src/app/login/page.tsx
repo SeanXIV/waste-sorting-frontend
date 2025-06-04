@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { authAPI } from '../../lib/api';
@@ -14,6 +14,7 @@ type FormData = {
 
 export default function Login() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { setLoading, setLoadingMessage } = useLoading();
@@ -24,6 +25,13 @@ export default function Login() {
     formState: { errors },
   } = useForm<FormData>();
 
+  useEffect(() => {
+    // Check for expired session message
+    if (searchParams?.get('expired') === 'true') {
+      setError('Your session has expired. Please login again.');
+    }
+  }, [searchParams]);
+
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     setError('');
@@ -31,24 +39,13 @@ export default function Login() {
     setLoadingMessage('Logging in...');
 
     try {
-      // Use the authAPI for login
-      const responseData = await authAPI.login(data.username, data.password);
-
-      // Store the token in localStorage
-      localStorage.setItem('token', responseData.accessToken);
-      localStorage.setItem('user', JSON.stringify({
-        id: responseData.id,
-        username: responseData.username,
-        email: responseData.email,
-        roles: responseData.roles
-      }));
-
-      // Redirect to dashboard
+      await authAPI.login(data.username, data.password);
       router.push('/dashboard');
+      router.refresh(); // Force a refresh to update the navigation state
     } catch (err: any) {
       console.error('Login error:', err);
       setError(
-        err.response?.data?.message ||
+        err.message ||
         'Failed to login. Please check your credentials.'
       );
     } finally {
@@ -60,12 +57,10 @@ export default function Login() {
   return (
     <div className="max-w-md mx-auto">
       <div className="card shadow-card-hover border-0 overflow-hidden">
-        <div className="bg-primary-600 p-6 text-white">
+        <div className="bg-gradient-to-r from-primary-600 to-primary-700 p-6 text-white">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center transform transition-transform hover:scale-110">
+              <span className="text-3xl">♻️</span>
             </div>
           </div>
           <div className="text-center">
@@ -76,10 +71,10 @@ export default function Login() {
 
         <div className="card-body p-6">
           {error && (
-            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded" role="alert">
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded animate-fade-in\" role="alert">
               <div className="flex">
-                <svg className="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                <svg className="h-5 w-5 text-red-500 mr-2\" fill="none\" viewBox="0 0 24 24\" stroke="currentColor">
+                  <path strokeLinecap="round\" strokeLinejoin="round\" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 <span className="text-red-800">{error}</span>
               </div>
