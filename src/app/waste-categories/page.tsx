@@ -22,6 +22,22 @@ export default function WasteCategories() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRecyclable, setFilterRecyclable] = useState<boolean | null>(null);
 
+  // Function to remove duplicates based on ID and name
+  const removeDuplicates = (categories: WasteCategory[]): WasteCategory[] => {
+    const seen = new Set();
+    return categories.filter(category => {
+      // Create a unique identifier using both id and name (in case API has inconsistent IDs)
+      const identifier = `${category.id}-${category.name.toLowerCase().trim()}`;
+      
+      if (seen.has(identifier)) {
+        return false; // Skip duplicate
+      }
+      
+      seen.add(identifier);
+      return true; // Keep unique item
+    });
+  };
+
   useEffect(() => {
     // Check if user is logged in
     const token = localStorage.getItem('token');
@@ -37,7 +53,14 @@ export default function WasteCategories() {
       setLoadingMessage('Loading waste categories...');
       try {
         const data = await wasteCategoriesAPI.getAll();
-        setWasteCategories(data);
+        
+        // Remove duplicates before setting state
+        const uniqueCategories = removeDuplicates(Array.isArray(data) ? data : []);
+        
+        console.log('Original categories count:', data?.length || 0);
+        console.log('Unique categories count:', uniqueCategories.length);
+        
+        setWasteCategories(uniqueCategories);
       } catch (err) {
         console.error('Error fetching waste categories:', err);
         setError('Failed to load waste categories. Please try again later.');
@@ -59,14 +82,15 @@ export default function WasteCategories() {
     return matchesSearch && matchesRecyclable;
   });
 
-  // We don't need a local loading indicator as we're using the global loading context
-
   return (
     <div>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-dark-900">Waste Categories</h1>
           <p className="text-gray-600 mt-2">Learn how to properly sort and dispose of different types of waste</p>
+          {wasteCategories.length > 0 && (
+            <p className="text-sm text-gray-500 mt-1">Showing {filteredCategories.length} of {wasteCategories.length} categories</p>
+          )}
         </div>
         <Link href="/dashboard" className="btn btn-outline mt-4 md:mt-0 flex items-center">
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +175,7 @@ export default function WasteCategories() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCategories.map((category) => (
-            <div className="card h-full hover:shadow-card-hover transition-shadow duration-300" key={category.id}>
+            <div className="card h-full hover:shadow-card-hover transition-shadow duration-300" key={`${category.id}-${category.name}`}>
               <div className="card-body">
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="text-xl font-semibold text-dark-900">{category.name}</h3>

@@ -28,6 +28,22 @@ export default function Dashboard() {
   const [error, setError] = useState('');
   const { isLoading, setLoading, setLoadingMessage } = useLoading();
 
+  // Function to remove duplicates based on ID and name
+  const removeDuplicates = (categories: WasteCategory[]): WasteCategory[] => {
+    const seen = new Set();
+    return categories.filter(category => {
+      // Create a unique identifier using both id and name
+      const identifier = `${category.id}-${category.name.toLowerCase().trim()}`;
+      
+      if (seen.has(identifier)) {
+        return false; // Skip duplicate
+      }
+      
+      seen.add(identifier);
+      return true; // Keep unique item
+    });
+  };
+
   useEffect(() => {
     // Check if user is logged in
     const token = localStorage.getItem('token');
@@ -47,7 +63,11 @@ export default function Dashboard() {
 
       try {
         const data = await wasteCategoriesAPI.getAll();
-        setWasteCategories(data);
+        
+        // Remove duplicates before setting state
+        const uniqueCategories = removeDuplicates(Array.isArray(data) ? data : []);
+        
+        setWasteCategories(uniqueCategories);
       } catch (err) {
         console.error('Error fetching waste categories:', err);
         setError('Failed to load waste categories. Please try again later.');
@@ -64,8 +84,6 @@ export default function Dashboard() {
     localStorage.removeItem('user');
     router.push('/');
   };
-
-  // We don't need a local loading state anymore as we're using the global loading context
 
   return (
     <div>
@@ -159,7 +177,7 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {wasteCategories.slice(0, 3).map((category) => (
-            <div className="card h-full" key={category.id}>
+            <div className="card h-full" key={`${category.id}-${category.name}`}>
               <div className="card-body">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="text-lg font-semibold">{category.name}</h3>

@@ -105,7 +105,23 @@ export const authAPI = {
   }
 };
 
-// Rest of the API calls with caching
+// Helper function to remove duplicates from any array of objects with id and name
+const removeDuplicates = <T extends { id: string; name: string }>(items: T[]): T[] => {
+  const seen = new Set();
+  return items.filter(item => {
+    // Create a unique identifier using both id and name
+    const identifier = `${item.id}-${item.name.toLowerCase().trim()}`;
+    
+    if (seen.has(identifier)) {
+      return false; // Skip duplicate
+    }
+    
+    seen.add(identifier);
+    return true; // Keep unique item
+  });
+};
+
+// Rest of the API calls with caching and deduplication
 const cache = new Map();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
@@ -120,12 +136,21 @@ const getCachedData = async (key: string, fetchFn: () => Promise<any>) => {
   return data;
 };
 
-// Waste Categories API calls with caching
+// Waste Categories API calls with caching and deduplication
 export const wasteCategoriesAPI = {
   getAll: async () => {
     return getCachedData('waste-categories', async () => {
       const response = await api.get('/waste-categories');
-      return response.data;
+      const data = response.data;
+      
+      // Remove duplicates before returning
+      if (Array.isArray(data)) {
+        const uniqueData = removeDuplicates(data);
+        console.log(`API returned ${data.length} categories, filtered to ${uniqueData.length} unique categories`);
+        return uniqueData;
+      }
+      
+      return data;
     });
   },
 
@@ -141,7 +166,22 @@ export const wasteCategoriesAPI = {
 export const disposalGuidelinesAPI = {
   getAll: async () => {
     const response = await api.get('/disposal-guidelines');
-    return response.data;
+    const data = response.data;
+    
+    // Remove duplicates if the data has id and title/name properties
+    if (Array.isArray(data)) {
+      const seen = new Set();
+      return data.filter(item => {
+        const identifier = `${item.id}-${(item.title || item.name || '').toLowerCase().trim()}`;
+        if (seen.has(identifier)) {
+          return false;
+        }
+        seen.add(identifier);
+        return true;
+      });
+    }
+    
+    return data;
   },
 
   getById: async (id: string) => {
@@ -154,7 +194,14 @@ export const disposalGuidelinesAPI = {
 export const recyclingCentersAPI = {
   getAll: async () => {
     const response = await api.get('/recycling-centers');
-    return response.data;
+    const data = response.data;
+    
+    // Remove duplicates for recycling centers
+    if (Array.isArray(data)) {
+      return removeDuplicates(data);
+    }
+    
+    return data;
   },
 
   getById: async (id: string) => {
@@ -164,7 +211,14 @@ export const recyclingCentersAPI = {
 
   searchByWasteCategory: async (wasteCategoryId: string) => {
     const response = await api.get(`/recycling-centers/search/waste-category/${wasteCategoryId}`);
-    return response.data;
+    const data = response.data;
+    
+    // Remove duplicates for search results
+    if (Array.isArray(data)) {
+      return removeDuplicates(data);
+    }
+    
+    return data;
   },
 };
 
