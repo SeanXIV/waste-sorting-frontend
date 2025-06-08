@@ -177,7 +177,7 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {wasteCategories.slice(0, 3).map((category) => (
-            <div className="card h-full" key={`${category.id}-${category.name}`}>
+            <div className="card h-full\" key={`${category.id}-${category.name}`}>
               <div className="card-body">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="text-lg font-semibold">{category.name}</h3>

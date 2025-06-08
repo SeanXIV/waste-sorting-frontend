@@ -175,7 +175,7 @@ export default function WasteCategories() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCategories.map((category) => (
-            <div className="card h-full hover:shadow-card-hover transition-shadow duration-300" key={`${category.id}-${category.name}`}>
+            <div className="card h-full hover:shadow-card-hover transition-shadow duration-300\" key={`${category.id}-${category.name}`}>
               <div className="card-body">
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="text-xl font-semibold text-dark-900">{category.name}</h3>
